@@ -1,0 +1,153 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE nta PUBLIC "-//Uppaal Team//DTD Flat System 1.1//EN" "http://www.it.uu.se/research/group/darts/uppaal/flat-1_2.dtd">
+<nta>
+  <declaration>chan force_trans_0, force_trans_1; 
+//  chan priority force_trans_0 &lt; force_trans_1; 
+</declaration>
+  <template>
+    <name>Machine</name>
+    <declaration>clock t; 
+clock d; 
+   bool desire_coffee ; 
+   bool desire_chocolate ; 
+   bool always_true ; 
+   bool allow_put_coin ; 
+   int[0, 20] kicks_in_the_machine = 0; 
+   int[0, 2000] coffee_grains = 1000; 
+    int[0, 2] arbitrary_stuff ; 
+   clock selection_timer; 
+</declaration>
+    <location id="initial">
+      <name>initial</name>
+      <label kind="invariant">true</label>
+    </location>
+    <location id="coin_inside">
+      <name>coin_inside</name>
+      <label kind="invariant">(d &lt;= 100000000) and ((selection_timer &lt;= 5))</label>
+    </location>
+    <location id="preparing_coffee">
+      <name>preparing_coffee</name>
+      <label kind="invariant">(d &lt;= 100000000)</label>
+    </location>
+    <location id="preparing_chocolate">
+      <name>preparing_chocolate</name>
+      <label kind="invariant">(d &lt;= 100000000)</label>
+    </location>
+    <location id="done">
+      <name>done</name>
+      <label kind="invariant">(d &lt;= 100000000)</label>
+    </location>
+    <location id="return_money">
+      <name>return_money</name>
+      <label kind="invariant">(d &lt;= 100000000)</label>
+    </location>
+    <init ref="initial"/>
+    <transition>
+      <source ref="initial"/>
+      <target ref="coin_inside"/>
+      <label kind="select">nondet_allow_put_coin: int[0,1]</label>
+      <label kind="guard">allow_put_coin == nondet_allow_put_coin</label>
+      <label kind="assignment">selection_timer := 0, d := 0</label>
+      <label kind="synchronisation">force_trans_1?</label>
+    </transition>
+    <transition>
+      <source ref="initial"/>
+      <target ref="coin_inside"/>
+      <label kind="select">nondet_allow_put_coin: int[0,1], nondet_always_true: int[0,1]</label>
+      <label kind="guard">(((coffee_grains &gt; 20) imply allow_put_coin == nondet_allow_put_coin and (kicks_in_the_machine == 3) or (kicks_in_the_machine == 7) and (arbitrary_stuff == 0)) and ((!(coffee_grains &gt; 20)) imply (((coffee_grains &gt; 30) imply false) and ((!(coffee_grains &gt; 30)) imply always_true == nondet_always_true))))</label>
+      <label kind="assignment">d := 0</label>
+      <label kind="synchronisation">force_trans_0?</label>
+    </transition>
+    <transition>
+      <source ref="coin_inside"/>
+      <target ref="return_money"/>
+      <label kind="select"></label>
+      <label kind="guard">(selection_timer &gt;= 5)</label>
+      <label kind="assignment">d := 0</label>
+      <label kind="synchronisation">force_trans_1?</label>
+    </transition>
+    <transition>
+      <source ref="coin_inside"/>
+      <target ref="preparing_coffee"/>
+      <label kind="select">nondet_always_true: int[0,1], nondet_desire_coffee: int[0,1], nondet_always_true: int[0,1]</label>
+      <label kind="guard">((always_true == nondet_always_true imply desire_coffee == nondet_desire_coffee and (coffee_grains &gt; 10) and always_true == nondet_always_true) and ((!always_true == nondet_always_true) imply false))</label>
+      <label kind="assignment">d := 0</label>
+      <label kind="synchronisation">force_trans_1?</label>
+    </transition>
+    <transition>
+      <source ref="coin_inside"/>
+      <target ref="preparing_chocolate"/>
+      <label kind="select">nondet_desire_chocolate: int[0,1]</label>
+      <label kind="guard">desire_chocolate == nondet_desire_chocolate</label>
+      <label kind="assignment">d := 0</label>
+      <label kind="synchronisation">force_trans_1?</label>
+    </transition>
+    <transition>
+      <source ref="preparing_coffee"/>
+      <target ref="done"/>
+      <label kind="select"></label>
+      <label kind="guard">true</label>
+      <label kind="assignment">d := 0</label>
+      <label kind="synchronisation">force_trans_1?</label>
+    </transition>
+    <transition>
+      <source ref="preparing_chocolate"/>
+      <target ref="done"/>
+      <label kind="select"></label>
+      <label kind="guard">true</label>
+      <label kind="assignment">d := 0</label>
+      <label kind="synchronisation">force_trans_1?</label>
+    </transition>
+    <transition>
+      <source ref="done"/>
+      <target ref="initial"/>
+      <label kind="select"></label>
+      <label kind="guard">true</label>
+      <label kind="assignment">d := 0</label>
+      <label kind="synchronisation">force_trans_1?</label>
+    </transition>
+    <transition>
+      <source ref="return_money"/>
+      <target ref="initial"/>
+      <label kind="select"></label>
+      <label kind="guard">true</label>
+      <label kind="assignment">d := 0</label>
+      <label kind="synchronisation">force_trans_1?</label>
+    </transition>
+  </template>
+  <template>
+    <name>PriorityEnforcer</name>
+    <declaration/>
+    <location id="pe0">
+      <name>pe0</name>
+    </location>
+    <init ref="pe0"/>
+    <transition>
+      <source ref="pe0"/>
+      <target ref="pe0"/>
+      <label kind="synchronisation">force_trans_0!</label>
+    </transition>
+    <transition>
+      <source ref="pe0"/>
+      <target ref="pe0"/>
+      <label kind="synchronisation">force_trans_1!</label>
+    </transition>
+  </template>
+  <system>              // Place template instantiations here.
+              Process = Machine();
+              PE = PriorityEnforcer();
+
+              // List one or more processes to be composed into a system.
+              system Process, PE;
+</system>
+  <queries>
+    <query>
+      <formula>A&lt;&gt; !Process.initial imply Process.done or Process.return_money</formula>
+      <comment>The machine must always reach either the initial state or, failing that, done or return_money.</comment>
+    </query>
+    <query>
+      <formula>E&lt;&gt; Process.preparing_coffee</formula>
+      <comment/>
+    </query>
+  </queries>
+</nta>

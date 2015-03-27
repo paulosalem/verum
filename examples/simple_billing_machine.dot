@@ -1,0 +1,9 @@
+digraph Verum__Examples__SimpleBillingMachine {
+    s_basic_account -> s_purchasing [label="e_begin_purchase [0]"]
+    s_basic_account -> s_trial_normal [label="e_begin_trial [0]"]
+    s_trial_normal -> s_basic_account [label="e_no_trial_days_left [0]"]
+    s_purchasing -> s_payment_normal [label="e_purchase_succeeds [0]"]
+    s_purchasing -> s_basic_account [label="e_purchase_fails [0]"]
+    s_payment_normal -> s_basic_account [label="e_no_payed_days_left [0]"]
+
+}

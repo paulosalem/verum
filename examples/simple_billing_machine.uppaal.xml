@@ -1,0 +1,131 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE nta PUBLIC "-//Uppaal Team//DTD Flat System 1.1//EN" "http://www.it.uu.se/research/group/darts/uppaal/flat-1_2.dtd">
+<nta>
+  <declaration>chan force_trans_0; 
+ chan priority force_trans_0; 
+</declaration>
+  <template>
+    <name>Machine</name>
+    <declaration>clock t; 
+clock d; 
+   int[30, 30] trial_days ; 
+   clock trial_days_used; 
+   clock trial_days_left; 
+   bool never_payed = true; 
+   clock payed_days_used; 
+   bool allow_event__e_begin_trial ; 
+   bool allow_event__e_begin_purchase ; 
+</declaration>
+    <location id="s_basic_account">
+      <name>s_basic_account</name>
+      <label kind="invariant">true</label>
+    </location>
+    <location id="s_trial_normal">
+      <name>s_trial_normal</name>
+      <label kind="invariant">(d &lt;= 100000000) and ((trial_days_used &lt;= trial_days))</label>
+    </location>
+    <location id="s_purchasing">
+      <name>s_purchasing</name>
+      <label kind="invariant">(d &lt;= 100000000)</label>
+    </location>
+    <location id="s_payment_normal">
+      <name>s_payment_normal</name>
+      <label kind="invariant">(d &lt;= 100000000) and ((never_payed == false))</label>
+    </location>
+    <init ref="s_basic_account"/>
+    <transition>
+      <source ref="s_basic_account"/>
+      <target ref="s_purchasing"/>
+      <label kind="select">nondet_allow_event__e_begin_purchase: int[0,1]</label>
+      <label kind="guard">allow_event__e_begin_purchase == nondet_allow_event__e_begin_purchase</label>
+      <label kind="assignment">d := 0</label>
+      <label kind="synchronisation">force_trans_0?</label>
+    </transition>
+    <transition>
+      <source ref="s_basic_account"/>
+      <target ref="s_trial_normal"/>
+      <label kind="select">nondet_allow_event__e_begin_trial: int[0,1]</label>
+      <label kind="guard">allow_event__e_begin_trial == nondet_allow_event__e_begin_trial and (trial_days_used &lt; trial_days)</label>
+      <label kind="assignment">d := 0</label>
+      <label kind="synchronisation">force_trans_0?</label>
+    </transition>
+    <transition>
+      <source ref="s_trial_normal"/>
+      <target ref="s_basic_account"/>
+      <label kind="select"></label>
+      <label kind="guard">(trial_days_used &gt;= trial_days)</label>
+      <label kind="assignment">d := 0</label>
+      <label kind="synchronisation">force_trans_0?</label>
+    </transition>
+    <transition>
+      <source ref="s_purchasing"/>
+      <target ref="s_payment_normal"/>
+      <label kind="select"></label>
+      <label kind="guard">true</label>
+      <label kind="assignment">payed_days_used := 0, never_payed := false, d := 0</label>
+      <label kind="synchronisation">force_trans_0?</label>
+    </transition>
+    <transition>
+      <source ref="s_purchasing"/>
+      <target ref="s_basic_account"/>
+      <label kind="select"></label>
+      <label kind="guard">true</label>
+      <label kind="assignment">d := 0</label>
+      <label kind="synchronisation">force_trans_0?</label>
+    </transition>
+    <transition>
+      <source ref="s_payment_normal"/>
+      <target ref="s_basic_account"/>
+      <label kind="select"></label>
+      <label kind="guard">(payed_days_used &gt; 365)</label>
+      <label kind="assignment">d := 0</label>
+      <label kind="synchronisation">force_trans_0?</label>
+    </transition>
+  </template>
+  <template>
+    <name>PriorityEnforcer</name>
+    <declaration/>
+    <location id="pe0">
+      <name>pe0</name>
+    </location>
+    <init ref="pe0"/>
+    <transition>
+      <source ref="pe0"/>
+      <target ref="pe0"/>
+      <label kind="synchronisation">force_trans_0!</label>
+    </transition>
+  </template>
+  <system>              // Place template instantiations here.
+              Process = Machine();
+              PE = PriorityEnforcer();
+
+              // List one or more processes to be composed into a system.
+              system Process, PE;
+</system>
+  <queries>
+    <query>
+      <formula>E&lt;&gt; Process.s_trial_normal</formula>
+      <comment/>
+    </query>
+    <query>
+      <formula>E&lt;&gt; Process.s_purchasing</formula>
+      <comment/>
+    </query>
+    <query>
+      <formula>E&lt;&gt; Process.s_payment_normal</formula>
+      <comment/>
+    </query>
+    <query>
+      <formula>Process.s_trial_normal --&gt; Process.s_basic_account</formula>
+      <comment> WARNING: This will only work if priorities are turned off!</comment>
+    </query>
+    <query>
+      <formula>E[] Process.s_basic_account</formula>
+      <comment>The user may remain with a basic account forever.</comment>
+    </query>
+    <query>
+      <formula>A[] !(Process.s_trial_normal and Process.trial_days_used &gt; 30)</formula>
+      <comment/>
+    </query>
+  </queries>
+</nta>

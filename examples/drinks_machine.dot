@@ -1,0 +1,12 @@
+digraph Verum__Examples__DrinksMachine {
+    initial -> coin_inside [label="put_coin [0]"]
+    initial -> coin_inside [label="hack_the_machine [-1]"]
+    coin_inside -> return_money [label="selection_timeout [0]"]
+    coin_inside -> preparing_coffee [label="press_coffee_button [0]"]
+    coin_inside -> preparing_chocolate [label="press_chocolate_button [0]"]
+    preparing_coffee -> done [label="finish_preparation [0]"]
+    preparing_chocolate -> done [label="finish_preparation [0]"]
+    done -> initial [label="restart [0]"]
+    return_money -> initial [label="restart [0]"]
+
+}
