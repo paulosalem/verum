@@ -3,7 +3,9 @@ Verum - Verifiable Ruby Machines
 
 Verum (for **Ve**rifiable **Ru**by **M**achines) is an experimental Ruby library that allows the implementation of Finite-State Machines (FSM) which are both executable and formally verifiable. The same program that controls the behavior of the machine's actual execution is used to define the necessary features for formal verification. Verification is achieved by translating the machines into timed-automata specifications for the [UPPAAL model checker](http://www.uppaal.org/). Furthermore, the machines can be visualized using the DOT format, through tools such as [Graphviz](http://www.graphviz.org/).
 
-The library comes with two simple examples: a drinks machine and a billing system. I recommend that you take a look in each of these examples, located at the `examples` folder. Here I summarize briefly the essential parts for creating a machine and how to use them. A complete account will, hopefully, be published as an academic paper soon.
+The library comes with two simple examples: a drinks machine and a billing system. I recommend that you take a look in each of these examples, located at the `examples` folder. Here I summarize briefly the essential parts for creating a machine and how to use them. A deeper technical presentation, including appropriate academic discussions and references, [is available as a peer-reviewed publication](http://dl.acm.org/citation.cfm?id=2889226): 
+
+   - Paulo Salem. **Practical Programming, Validation and Verification with Finite-State Machines: a Library and its Industrial Application**. In: *Proceedings of the 38th International Conference on Software Engineering Companion*. ACM, 2016. http://dl.acm.org/citation.cfm?id=2889226
 
 ## Instalation
 
